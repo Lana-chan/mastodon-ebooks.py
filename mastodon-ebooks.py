@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from mastodon import Mastodon
 from bs4 import BeautifulSoup
+from random import shuffle
 import markovify
 import html
 import json
@@ -105,17 +106,37 @@ def scrape_id(id, since=None):
   return new_since_id
 
 # returns a markov generated toot
-def generate(length=None):
+def generate(length=None, seed_msg=''):
   modelfile = 'model.json'
   if not os.path.exists(modelfile):
     sys.exit('no model -- please scrape first')
   with open(modelfile, 'r') as f:
     reconstituted_model = markovify.Text.from_json(f.read())
-  if length:
-    msg = reconstituted_model.make_short_sentence(length)
+  
+  msg = ''
+  if seed_msg is not '':
+    list = seed_msg.split(' ')
+    shuffle(list)
+    for word in list:
+      i = 500
+      while i:
+        test = generate_length(reconstituted_model, length)
+        if word in test:
+          msg = test
+          break
+        i = i - 1
+      if msg is not '': break
+    if not msg:
+      msg = generate_length(reconstituted_model, length)
   else:
-    msg = reconstituted_model.make_sentence()
+    msg = generate_length(reconstituted_model, length)
   return msg.replace(chr(31), "\n")
+  
+def generate_length(model, length=None):
+  if length:
+    return model.make_short_sentence(length)
+  else:
+    return model.make_sentence()
 
 # perform a generated toot to mastodon
 def toot():
@@ -140,7 +161,8 @@ def reply():
   for status in mentions:
     acct = status['status']['account']['acct']
     id = status['status']['id']
-    toot = (''.join(['@', acct, ' ', generate(400)]))[:500]
+    print (strip_tags(status['status']['content']))
+    toot = (''.join(['@', acct, ' ', generate(400, strip_tags(status['status']['content']))]))[:500]
     print(toot)
     mastodon.status_post(toot, in_reply_to_id=id)
   #clear notifications
