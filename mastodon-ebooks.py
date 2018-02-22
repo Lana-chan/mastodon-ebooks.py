@@ -33,8 +33,13 @@ def strip_tags(content):
   for i in tags:
     i.replace_with(i.get_text())
   # strip html tags, chr(31) joins text in different html tags
-  return soup.get_text(chr(31)).strip()
+  return soup.get_text('\n').strip()
 
+# markovify subclass to use \0 as sentence separator
+class MarkovModel(markovify.Text):
+  def sentence_split(self, text):
+    return text.split('\0')
+  
 # scrapes the accounts the bot is following to build corpus
 def scrape():
   me = mastodon.account_verify_credentials()
@@ -64,7 +69,7 @@ def scrape():
   for (dirpath, _, filenames) in os.walk("corpus"):
     for filename in filenames:
       with open(os.path.join(dirpath, filename)) as f:
-        model = markovify.NewlineText(f, retain_original=False)
+        model = MarkovModel(f, retain_original=False)
         if combined_model:
           combined_model = markovify.combine(models=[combined_model, model])
         else:
@@ -84,14 +89,14 @@ def scrape_id(id, since=None):
   corpusfile = 'corpus/%s.txt' % id
   i = 0
   with open(bufferfile, 'w') as output:
-    while toots != None:
+    while toots != None and len(toots) > 0:
       # writes current amount of scraped toots without breaking line
       i = i + len(toots)
       sys.stdout.write('\r%d' % i)
       sys.stdout.flush()
       filtered_toots = list(filter(lambda x: x['spoiler_text'] == "" and x['reblog'] is None and x['visibility'] in ["public", "unlisted"], toots))
       for toot in filtered_toots:
-        output.write(strip_tags(toot['content'])+'\n')
+        output.write(strip_tags(toot['content'])+'\0')
       toots = mastodon.fetch_next(toots)
     # buffer is appended to the top of old corpus
     if os.path.exists(corpusfile):
