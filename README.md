@@ -30,7 +30,7 @@ Optionally, you can also run `./mastodon-ebooks.py -r` regularly to check on not
 
 1. Create a Mastodon account to be the ebooks bot
 2. Copy `config.cfg-sample` to `config.cfg`
-** Advanced users: You'll probably already have a config and secret keys for the bot. Just set it up as long as your config file can find the `ananaswrapper.ebooksBot` class.
+   * Advanced users: You'll probably already have a config and secret keys for the bot. Just set it up as long as your config file can find the `ananaswrapper.ebooksBot` class.
 3. Run `ananas --interactive config.cfg` and input the information for your bot account
 
 That's it! The ananas wrapper is set to scrape daily, toot every 30 minutes and reply to mentions. You can find more info at the [ananas repo](https://github.com/chr-1x/ananas)
