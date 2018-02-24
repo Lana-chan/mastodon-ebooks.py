@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-from mastodon import Mastodon
 from bs4 import BeautifulSoup
 from random import shuffle
 import markovify
@@ -8,14 +7,6 @@ import json
 import os
 import sys
 import getopt
-
-# init mastodon
-mastodon = Mastodon(
-  #replace values/files with your own
-  client_id = 'clientcred.secret',
-  access_token = 'usercred.secret',
-  api_base_url = 'https://computerfairi.es'
-)
 
 # strip html tags for text alone
 def strip_tags(content):
@@ -41,7 +32,7 @@ class MarkovModel(markovify.Text):
     return text.split('\0')
   
 # scrapes the accounts the bot is following to build corpus
-def scrape():
+def scrape(mastodon):
   me = mastodon.account_verify_credentials()
   following = mastodon.account_following(me['id'])
   acctfile = 'accts.json'
@@ -55,10 +46,11 @@ def scrape():
   print(acctjson)
   for acc in following:
     id = str(acc['id'])
+    print(id)
     try:
-      since_id = scrape_id(id, since=acctjson[id])
+      since_id = scrape_id(mastodon, id, since=acctjson[id])
     except:
-      since_id = scrape_id(id)
+      since_id = scrape_id(mastodon, id)
     acctjson[id] = since_id
   
   with open(acctfile, 'w') as f:
@@ -77,7 +69,7 @@ def scrape():
   with open('model.json','w') as f:
     f.write(combined_model.to_json())
 
-def scrape_id(id, since=None):
+def scrape_id(mastodon, id, since=None):
   # excluding replies was a personal choice. i haven't made an easy setting for this yet
   toots = mastodon.account_statuses(id, since_id=since, exclude_replies=True)
   # if this fails, there are no new toots and we just return old pointer
@@ -144,7 +136,7 @@ def generate_length(model, length=None):
     return model.make_sentence()
 
 # perform a generated toot to mastodon
-def toot():
+def toot(mastodon):
   msg = generate(500)
   mastodon.toot(msg)
   print('Tooted: %s' % msg)
@@ -154,7 +146,7 @@ def console():
   print(generate())
 
 # scan all notifications for mentions and reply to them
-def reply():
+def reply(mastodon):
   #get nofitications
   try:
     notifs = mastodon.notifications()
@@ -181,6 +173,16 @@ def usage():
   print('-r, --reply: replies to mentions')
   
 def main(argv):
+  
+  # init mastodon
+  from mastodon import Mastodon
+  mastodon = Mastodon(
+    #replace values/files with your own
+    client_id = 'clientcred.secret',
+    access_token = 'usercred.secret',
+    api_base_url = 'https://computerfairi.es'
+  )
+
   try:                                
     opts, args = getopt.getopt(argv, "trps", ["toot", "reply", "print", "scrape"])
   except getopt.GetoptError:          
@@ -188,13 +190,13 @@ def main(argv):
     sys.exit(2)
   for opt, arg in opts:
     if opt in ('-t','--toot'):
-      toot()
+      toot(mastodon)
     elif opt in ('-r','--reply'):
-      reply()
+      reply(mastodon)
     elif opt in ('-p','--print'):
       console()
     elif opt in ('-s','--scrape'):
-      scrape()
+      scrape(mastodon)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

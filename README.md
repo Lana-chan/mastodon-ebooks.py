@@ -9,11 +9,9 @@ Inspired by original work by Jess: https://github.com/Jess3Jane/mastodon-ebooks
 * Scrapes only new toots, not entire list of statuses
 * Separates corpus by account, making a multi-account ebooks easier to manage
 * Does not require Heroku or Ruby
+* "Smart" replies
 * Cronjob friendly
-
-### Future improvements?
-
-* Use ananas to use streaming to reply to toots instead of an every-minute cronjob
+* Ananas friendly
 
 ## Usage
 
@@ -27,3 +25,12 @@ Inspired by original work by Jess: https://github.com/Jess3Jane/mastodon-ebooks
 You can now set scraping and tooting to run periodically with cronjobs.
 
 Optionally, you can also run `./mastodon-ebooks.py -r` regularly to check on notifications and reply to mentions.
+
+### The Ananas Way
+
+1. Create a Mastodon account to be the ebooks bot
+2. Copy `config.cfg-sample` to `config.cfg`
+** Advanced users: You'll probably already have a config and secret keys for the bot. Just set it up as long as your config file can find the `ananaswrapper.ebooksBot` class.
+3. Run `ananas --interactive config.cfg` and input the information for your bot account
+
+That's it! The ananas wrapper is set to scrape daily, toot every 30 minutes and reply to mentions. You can find more info at the [ananas repo](https://github.com/chr-1x/ananas)

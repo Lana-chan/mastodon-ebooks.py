@@ -1,0 +1,4 @@
+[ebooks]
+class = ananaswrapper.ebooksBot
+exclude_replies = True
+reply_to_mentions = True
