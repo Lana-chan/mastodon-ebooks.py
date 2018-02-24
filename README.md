@@ -4,6 +4,8 @@ Simple ebooks-style bot for mastodon.py
 
 Inspired by original work by Jess: https://github.com/Jess3Jane/mastodon-ebooks
 
+Original ananas solution by Noëlle: https://github.com/joyeusenoelle/ananas-ebooks
+
 ## Improvements over other ebooks bots
 
 * Scrapes only new toots, not entire list of statuses
