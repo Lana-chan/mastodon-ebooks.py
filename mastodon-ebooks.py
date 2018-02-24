@@ -86,7 +86,11 @@ def scrape_id(mastodon, id, since=None):
       i = i + len(toots)
       sys.stdout.write('\r%d' % i)
       sys.stdout.flush()
-      filtered_toots = list(filter(lambda x: x['spoiler_text'] == "" and x['reblog'] is None and x['visibility'] in ["public", "unlisted"], toots))
+      filtered_toots = list(filter(lambda x:
+        x['spoiler_text'] == "" and
+        x['reblog'] is None and
+        x['visibility'] in ["public", "unlisted"]
+        , toots))
       for toot in filtered_toots:
         output.write(strip_tags(toot['content'])+'\0')
       toots = mastodon.fetch_next(toots)
@@ -153,15 +157,19 @@ def reply(mastodon):
   except (KeyError):
     return
   #filter mentions
-  mentions = list(filter(lambda x: x['type'] == 'mention', notifs))
+  notifs = list(filter(lambda x: x['type'] == 'mention', notifs))
   #iterate over them
-  for status in mentions:
-    acct = status['status']['account']['acct']
-    id = status['status']['id']
-    print (strip_tags(status['status']['content']))
-    toot = (''.join(['@', acct, ' ', generate(400, strip_tags(status['status']['content']))]))[:500]
+  for mention in notifs:
+    status = mention['status']
+    vis = status['visibility']
+    acct = status['account']['acct']
+    id = status['id']
+    msg = strip_tags(status['content'])
+    rsp = generate(400, msg)
+    print (msg)
+    toot = '@{} {}'.format(acct, msg)[:500]
     print(toot)
-    mastodon.status_post(toot, in_reply_to_id=id)
+    mastodon.status_post(toot, in_reply_to_id=id, visibility=vis)
   #clear notifications
   mastodon._Mastodon__api_request('POST', '/api/v1/notifications/clear')
 
