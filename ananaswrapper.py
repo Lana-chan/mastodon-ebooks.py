@@ -14,6 +14,10 @@ class ebooksBot(PineappleBot):
     except:
       self.bot_name = ""
     self.scrape()
+    
+  # clear notifications in case the bot will be run from mastodon-ebooks.py
+  def close(self):
+    self._Mastodon__api_request('POST', '/api/v1/notifications/clear')
   
   @daily()
   def scrape(self):
