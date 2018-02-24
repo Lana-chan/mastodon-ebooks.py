@@ -167,7 +167,7 @@ def reply(mastodon):
     msg = strip_tags(status['content'])
     rsp = generate(400, msg)
     print (msg)
-    toot = '@{} {}'.format(acct, msg)[:500]
+    toot = '@{} {}'.format(acct, rsp)[:500]
     print(toot)
     mastodon.status_post(toot, in_reply_to_id=id, visibility=vis)
   #clear notifications
